@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nvmetarget"
+dynamic = ["version"]
+requires-python = ">=3.8"
+authors = [
+  {name = "Glenn West", email = "glennswest@neuralcloudcomputing.com"},
+]
+maintainers = [
+  {name = "Glenn West", email = "glennswest@neuralcloudcomputing.com"},
+]
+description = "Library to manage creation of nvme over tcp targets in linux"
+readme = "README.md"
+keywords = ["nvme", "fabric", "storage"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python"
+]
+
+[tool.setuptools_scm]
+write_to = "nvmetarget/_version.py"
+version_scheme = "python-simplified-semver"
+
+[project.urls]
+Homepage = "https://github.com/glennswest/nvmetarget"
+

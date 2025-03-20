@@ -5,10 +5,10 @@
 import os
 import subprocess
 from pysondb import getDb
-
-
-class NvmeTarget
 import socket
+
+
+class NvmeTarget:
       def get_ip():
           s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
           s.settimeout(0)
@@ -22,7 +22,8 @@ import socket
               s.close()
           return IP
 
-      def __init__(self)
+      def __init__(self):
+          print("Init Starting")
           os.system("modprobe nvmet_tcp")
           os.makedirs('~/.nvmetarget',exist_ok=True)
           target_db = getDb('/etc/nvmetarget.json')
@@ -41,24 +42,24 @@ import socket
           r = float(bytes)
           return bytes / (bsize ** a[to])
 
-      def echo(thevalue, thefile)
+      def echo(thevalue, thefile):
           with open(thefile, "w") as text_file:
               text_file.write(thevalue)
 
-      def read(thefile)
+      def read(thefile):
           with open(thefile) as f:
                thevalue = f.readline().strip('\n')
           return(thevalue)
 
-      def create_thin_image(thefile,thesize)
+      def create_thin_image(thefile,thesize):
           size_in_bytes = self.bytresto(thesize) - 512
           fd = os.open(thefile, os.O_RDWR+os.O_CREAT)
           os.lseek(fd,size_in_bytes,os.SEEK_SET)
           os.write(fd,zfill(512))
-	  os.close(fd)
+          os.close(fd)
 
-      def namespace(thename,thefile,thesize)
-          subsystem = self.read('~/.nvmetargt/subsystem')
+      def namespace(thename,thefile,thesize):
+          subsystem = self.read('~/.nvmetarget/subsystem')
           if len(thename):
              if not os.path.isfile('/etc/nvmetarget.namespace'):
                 self.echo('1','/etc/nvmetarget.namespace')
@@ -87,7 +88,7 @@ import socket
           port_path      = portpath + 'subsystems/' + subsystem
           # ln -s /sys/kernel/config/nvmet/subsystems/mysub/ /sys/kernel/config/nvmet/ports/1/subsystems/mysub
           os.symlink(subsystem_path,port_path)
-          theitem  = {"id": thename, "subsystem": subsystem, "device": device, "file: " thefile, "size": thesize, "active": "True"}
+          theitem  = {"id": thename, "subsystem": subsystem, "device": device, "file": thefile, "size": thesize, "active": "True"}
           try:
              data =  self.target_db.getById(thename)
           except:
@@ -96,20 +97,20 @@ import socket
              return
           self.target_db.updateById(data.id, new_data=theitem)
          
-      def create_device(thefile,thesize)
-          if not os.path.exists(thefile)
+      def create_device(thefile,thesize):
+          if not os.path.exists(thefile):
              create_thin_image(thefile,thesize)
           thedevice = self.get_loop_device()
           
 
-      def subsystem(thename)
+      def subsystem(thename):
           subpath = "/sys/kernel/config/nvmet/subsystems/" + thename
           if os.path.isdir(subpath):
              echo(thename,'~/.nvmetarget/subsystem')
              return
           os.mkdir(subpath)
           echo('1',subpath + '/attr_allow_any_host')
-	  echo(thename,'~/.nvmetarget/subsystem)
+          echo(thename,'~/.nvmetarget/subsystem')
 
              
           
