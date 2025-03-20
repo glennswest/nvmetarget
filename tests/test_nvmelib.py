@@ -1,5 +1,7 @@
 from nvmetarget import *
+symbols = dir()
+print(symbols)
 
-x = nvmelib.NvmeTarget()
-x.subsystem('storage')
+# x = NvmeTarget()
+# x.subsystem('storage')
 

@@ -1,2 +1,2 @@
-from .NvmeTarget import NvmeTarget
+from .nvmetarget import NvmeTarget
 
