@@ -1,6 +1,5 @@
-from nvmetarget import nvmelib
+from nvmetarget import *
 
-def test_nvmelib():
-    x = nvmelib()
-    x.subsystem('storage')
+x = nvmelib.NvmeTarget()
+x.subsystem('storage')
 

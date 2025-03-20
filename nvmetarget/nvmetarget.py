@@ -4,11 +4,19 @@
 
 import os
 import subprocess
+import syslog
 from pysondb import getDb
 import socket
 
 
 class NvmeTarget:
+      def __init__(self):
+          syslog(syslog.LOG_INFO, "NvmeTargetLib: Initializing")
+          os.system("modprobe nvmet_tcp")
+          os.makedirs('~/.nvmetarget',exist_ok=True)
+          target_db = getDb('/etc/nvmetarget.json')
+          self.ip = get_ip()
+
       def get_ip():
           s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
           s.settimeout(0)
@@ -21,13 +29,6 @@ class NvmeTarget:
           finally:
               s.close()
           return IP
-
-      def __init__(self):
-          print("Init Starting")
-          os.system("modprobe nvmet_tcp")
-          os.makedirs('~/.nvmetarget',exist_ok=True)
-          target_db = getDb('/etc/nvmetarget.json')
-          self.ip = get_ip()
 
       def run_command(command):
           process = subprocess.run(command, shell=True, capture_output=True, text=True)
