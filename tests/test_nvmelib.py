@@ -1,7 +1,9 @@
-from nvmetarget import *
+#from nvmetarget.nvmelib import NvmeTarget
+from nvmetarget import nvmelib
+#from nvmetarget.nvmelib import NvmeTarget
 symbols = dir()
 print(symbols)
 
-# x = NvmeTarget()
-# x.subsystem('storage')
+x = nvmelib.NvmeTarget()
+x.subsystem('storage')
 

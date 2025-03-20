@@ -10,14 +10,7 @@ import socket
 
 
 class NvmeTarget:
-      def __init__(self):
-          syslog(syslog.LOG_INFO, "NvmeTargetLib: Initializing")
-          os.system("modprobe nvmet_tcp")
-          os.makedirs('~/.nvmetarget',exist_ok=True)
-          target_db = getDb('/etc/nvmetarget.json')
-          self.ip = get_ip()
-
-      def get_ip():
+      def get_ip(self):
           s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
           s.settimeout(0)
           try:
@@ -30,36 +23,47 @@ class NvmeTarget:
               s.close()
           return IP
 
-      def run_command(command):
+      def __init__(self):
+          # syslog(syslog.LOG_INFO, "NvmeTargetLib: Initializing")
+          os.system("modprobe nvmet_tcp")
+          self.home_dir = os.path.expanduser('~/.nvmetarget')
+          print(self.home_dir)
+          os.makedirs(self.home_dir,exist_ok=True)
+          self.target_db = getDb('/etc/nvmetarget.json')
+          self.ip = self.get_ip()
+
+      def run_command(self,command):
           process = subprocess.run(command, shell=True, capture_output=True, text=True)
           return process.stdout
 
-      def get_loop_device():
-          thedevice = self.run_command("losetup -f")
+      def get_loop_device(self):
+          thedevice = self.run_command(self,"losetup -f")
           return(thedevice)
 
-      def bytesto(bytes, to, bsize=1024): 
+      def bytesto(self,bytes, to, bsize=1024): 
           a = {'k' : 1, 'm': 2, 'g' : 3, 't' : 4, 'p' : 5, 'e' : 6 }
           r = float(bytes)
           return bytes / (bsize ** a[to])
 
-      def echo(thevalue, thefile):
-          with open(thefile, "w") as text_file:
+      def echo(self,thevalue, thefile):
+          thepath = os.path.expanduser(thefile)
+          with open(thepath, "w") as text_file:
               text_file.write(thevalue)
 
-      def read(thefile):
-          with open(thefile) as f:
+      def read(self,thefile):
+          thepath = os.path.expanduser(thefile)
+          with open(thepath) as f:
                thevalue = f.readline().strip('\n')
           return(thevalue)
 
-      def create_thin_image(thefile,thesize):
+      def create_thin_image(self,thefile,thesize):
           size_in_bytes = self.bytresto(thesize) - 512
           fd = os.open(thefile, os.O_RDWR+os.O_CREAT)
           os.lseek(fd,size_in_bytes,os.SEEK_SET)
           os.write(fd,zfill(512))
           os.close(fd)
 
-      def namespace(thename,thefile,thesize):
+      def namespace(self,thename,thefile,thesize):
           subsystem = self.read('~/.nvmetarget/subsystem')
           if len(thename):
              if not os.path.isfile('/etc/nvmetarget.namespace'):
@@ -71,7 +75,7 @@ class NvmeTarget:
           namespacepath = '/sys/kernel/config/nvmet/subsystems/' + subsystem + '/' + thename
           if not os.path.isdir(subpath):
              os.mkdir(namespacepath)
-          device = self.get_loop_device()
+          device = self.get_loop_device(self)
           if not os.path.exists(thefile):
              create_thin_image(thefile,thesize)
           cmd = 'losetup ' + device + ' ' + thefile
@@ -98,20 +102,20 @@ class NvmeTarget:
              return
           self.target_db.updateById(data.id, new_data=theitem)
          
-      def create_device(thefile,thesize):
+      def create_device(self,thefile,thesize):
           if not os.path.exists(thefile):
              create_thin_image(thefile,thesize)
           thedevice = self.get_loop_device()
           
 
-      def subsystem(thename):
+      def subsystem(self,thename):
           subpath = "/sys/kernel/config/nvmet/subsystems/" + thename
           if os.path.isdir(subpath):
-             echo(thename,'~/.nvmetarget/subsystem')
+             self.echo(thename,'~/.nvmetarget/subsystem')
              return
           os.mkdir(subpath)
-          echo('1',subpath + '/attr_allow_any_host')
-          echo(thename,'~/.nvmetarget/subsystem')
+          self.echo('1',subpath + '/attr_allow_any_host')
+          self.echo(thename,'~/.nvmetarget/subsystem')
 
              
           
