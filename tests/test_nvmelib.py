@@ -6,6 +6,6 @@ print(symbols)
 
 x = nvmelib.NvmeTarget()
 x.subsystem('storage')
-x.namespace('1','test1.img','10 MB')
-x.namespace('2','test2.img','5 MB')
-
+for drive in range(1,20):
+   thedrive = str(drive)
+   x.namespace(thedrive,'test' + thedrive + '.img','10 MB')

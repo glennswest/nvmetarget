@@ -90,6 +90,8 @@ class NvmeTarget:
           result = self.run_command(cmd)
           self.echo(device,namespacepath + '/device_path')
           self.echo('1',   namespacepath + '/enable')
+          # fullpath = os.path.abspath(thefile)
+          # self.echo(fullpath,namespacepath + '/serial_number')
           portpath = '/sys/kernel/config/nvmet/ports/1'
           # Only one port per subsystem and in our case per system
           if not os.path.isdir(portpath):
