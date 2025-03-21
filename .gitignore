@@ -1,4 +1,6 @@
 venv
+.*
+*.img
 .eggs
 build
 dist

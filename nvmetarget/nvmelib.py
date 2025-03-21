@@ -37,13 +37,13 @@ class NvmeTarget:
           return process.stdout
 
       def get_loop_device(self):
-          thedevice = self.run_command(self,"losetup -f")
+          thedevice = self.run_command("losetup -f")
           return(thedevice)
 
-      def bytesto(self,bytes, to, bsize=1024): 
-          a = {'k' : 1, 'm': 2, 'g' : 3, 't' : 4, 'p' : 5, 'e' : 6 }
-          r = float(bytes)
-          return bytes / (bsize ** a[to])
+      def parse_size(self,size):
+          units = {"B": 1, "KB": 10**3, "MB": 10**6, "GB": 10**9, "TB": 10**12}
+          number, unit = [string.strip() for string in size.split()]
+          return int(float(number)*units[unit])
 
       def echo(self,thevalue, thefile):
           thepath = os.path.expanduser(thefile)
@@ -53,53 +53,60 @@ class NvmeTarget:
       def read(self,thefile):
           thepath = os.path.expanduser(thefile)
           with open(thepath) as f:
-               thevalue = f.readline().strip('\n')
+               theline = f.readline()
+          thevalue = theline.strip('\n')
           return(thevalue)
 
       def create_thin_image(self,thefile,thesize):
-          size_in_bytes = self.bytresto(thesize) - 512
+          size_in_bytes = self.parse_size(thesize) - 512
           fd = os.open(thefile, os.O_RDWR+os.O_CREAT)
           os.lseek(fd,size_in_bytes,os.SEEK_SET)
-          os.write(fd,zfill(512))
+          sector = bytearray(512)
+          os.write(fd,sector)
           os.close(fd)
 
       def namespace(self,thename,thefile,thesize):
           subsystem = self.read('~/.nvmetarget/subsystem')
-          if len(thename):
+          if len(thename) == 0:
              if not os.path.isfile('/etc/nvmetarget.namespace'):
                 self.echo('1','/etc/nvmetarget.namespace')
              thename = self.read('/etc/nvmetarget.namespace')
              nextname = int(thename) + 1
              self.echo(str(nextname),'/etc/nvmetarget.namespace')
+          print("namespace: " + thename)
           self.echo(thename,'~/.nvmetarget/namespace')
-          namespacepath = '/sys/kernel/config/nvmet/subsystems/' + subsystem + '/' + thename
-          if not os.path.isdir(subpath):
+          namespacepath = '/sys/kernel/config/nvmet/subsystems/' + subsystem + '/namespaces/' + thename
+          if not os.path.isdir(namespacepath):
+             print("Making namespace: " + namespacepath)
              os.mkdir(namespacepath)
-          device = self.get_loop_device(self)
+          device = self.get_loop_device()
+          print("Device: " + device)
           if not os.path.exists(thefile):
-             create_thin_image(thefile,thesize)
+             self.create_thin_image(thefile,thesize)
           cmd = 'losetup ' + device + ' ' + thefile
           result = self.run_command(cmd)
-          self.echo(device,namespacepath + '/' + thename + '/device_path')
-          self.echo('1',   namespacepath + '/' + thename + '/enable')
-          portpath = '/sys/kernel/config/nvmet/ports/1'
+          self.echo(device,namespacepath + '/device_path')
+          self.echo('1',   namespacepath + '/enable')
+          portpath = '/sys/kernel/config/nvmet/ports/' + thename
           if not os.path.isdir(portpath):
              os.mkdir(portpath)
              self.echo('ipv4', portpath + '/addr_adrfam')
              self.echo('tcp' , portpath + '/addr_trtype')
              self.echo('4420', portpath + '/addr_trsvcid')
              self.echo(self.ip,portpath + '/addr_traddr')
-          subsystem_path = '/sys/kenrel/config/nvmet/subsystems/' + subsystem + '/'
-          port_path      = portpath + 'subsystems/' + subsystem
+          subsystem_path = '/sys/kernel/config/nvmet/subsystems/' + subsystem + '/'
+          port_path      = portpath + '/subsystems/' + subsystem
           # ln -s /sys/kernel/config/nvmet/subsystems/mysub/ /sys/kernel/config/nvmet/ports/1/subsystems/mysub
           os.symlink(subsystem_path,port_path)
-          theitem  = {"id": thename, "subsystem": subsystem, "device": device, "file": thefile, "size": thesize, "active": "True"}
+          theitem  = {"namespace": thename, "subsystem": subsystem, "device": device, "file": thefile, "size": thesize, "active": "True"}
           try:
-             data =  self.target_db.getById(thename)
+             data =  self.target_db.getBy({"namespace":thename})
+             print("Existing: " + data)
           except:
              item_id = self.target_db.add(theitem)
-             print("Item id: " + item_id)
+             print("Item id: " + str(item_id))
              return
+          print(data)
           self.target_db.updateById(data.id, new_data=theitem)
          
       def create_device(self,thefile,thesize):
