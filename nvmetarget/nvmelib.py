@@ -43,7 +43,7 @@ class NvmeTarget:
           return(thedevice)
 
       def parse_size(self,size):
-          units = {"B": 1, "KB": 10**3, "MB": 10**6, "GB": 10**9, "TB": 10**12}
+          units = {"B": 1, "KB": 2**10, "MB": 2**20, "GB": 2**30, "TB": 2**40}
           number, unit = [string.strip() for string in size.split()]
           return int(float(number)*units[unit])
 
