@@ -87,6 +87,18 @@ class NvmeTarget:
           result = self.run_command(cmd)
           self.echo(device,namespacepath + '/device_path')
           self.echo('1',   namespacepath + '/enable')
+          portpath = '/sys/kernel/config/nvmet/ports/1'
+          # Only one port per subsystem and in our case per system
+          if not os.path.isdir(portpath):
+             os.mkdir(portpath)
+             self.echo('ipv4', portpath + '/addr_adrfam')
+             self.echo('tcp' , portpath + '/addr_trtype')
+             self.echo('4420', portpath + '/addr_trsvcid')
+             self.echo(self.ip,portpath + '/addr_traddr')
+             subsystem_path = '/sys/kernel/config/nvmet/subsystems/' + subsystem + '/'
+             port_path      = portpath + '/subsystems/' + subsystem
+             # ln -s /sys/kernel/config/nvmet/subsystems/mysub/ /sys/kernel/config/nvmet/ports/1/subsystems/mysub
+             os.symlink(subsystem_path,port_path)
           theitem  = {"namespace": thename, "subsystem": subsystem, "device": device, "file": thefile, "size": thesize, "active": "True"}
           try:
              data =  self.target_db.getBy({"namespace":thename})
@@ -111,17 +123,6 @@ class NvmeTarget:
              return
           os.mkdir(subpath)
           self.echo('1',subpath + '/attr_allow_any_host')
-          portpath = '/sys/kernel/config/nvmet/ports/' + thename
-          if not os.path.isdir(portpath):
-             os.mkdir(portpath)
-             self.echo('ipv4', portpath + '/addr_adrfam')
-             self.echo('tcp' , portpath + '/addr_trtype')
-             self.echo('4420', portpath + '/addr_trsvcid')
-             self.echo(self.ip,portpath + '/addr_traddr')
-          subsystem_path = '/sys/kernel/config/nvmet/subsystems/' + subsystem + '/'
-          port_path      = portpath + '/subsystems/' + subsystem
-          # ln -s /sys/kernel/config/nvmet/subsystems/mysub/ /sys/kernel/config/nvmet/ports/1/subsystems/mysub
-          os.symlink(subsystem_path,port_path)
           self.echo(thename,'~/.nvmetarget/subsystem')
 
              
