@@ -34,7 +34,8 @@ class NvmeTarget:
 
       def run_command(self,command):
           process = subprocess.run(command, shell=True, capture_output=True, text=True)
-          return process.stdout
+          theresult = process.stdout.strip('\n')
+          return theresult
 
       def get_loop_device(self):
           thedevice = self.run_command("losetup -f")
@@ -85,8 +86,8 @@ class NvmeTarget:
           if not os.path.exists(thefile):
              self.create_thin_image(thefile,thesize)
           cmd = 'losetup ' + device + ' ' + thefile
+          print("Cmd: " + cmd)
           result = self.run_command(cmd)
-          device = result.strip('\n')
           self.echo(device,namespacepath + '/device_path')
           self.echo('1',   namespacepath + '/enable')
           portpath = '/sys/kernel/config/nvmet/ports/1'
