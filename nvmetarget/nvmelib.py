@@ -38,6 +38,7 @@ class NvmeTarget:
 
       def get_loop_device(self):
           thedevice = self.run_command("losetup -f")
+          print("Loop Device: " + thedevice)
           return(thedevice)
 
       def parse_size(self,size):
@@ -85,6 +86,7 @@ class NvmeTarget:
              self.create_thin_image(thefile,thesize)
           cmd = 'losetup ' + device + ' ' + thefile
           result = self.run_command(cmd)
+          device = result.strip('\n')
           self.echo(device,namespacepath + '/device_path')
           self.echo('1',   namespacepath + '/enable')
           portpath = '/sys/kernel/config/nvmet/ports/1'
