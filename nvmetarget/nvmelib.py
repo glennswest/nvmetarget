@@ -69,6 +69,10 @@ class NvmeTarget:
 
       def namespace(self,thename,thefile,thesize):
           subsystem = self.read('~/.nvmetarget/subsystem')
+          fullpath = os.path.abspath(thefile)
+          subpath = "/sys/kernel/config/nvmet/subsystems/" + subsystem
+          self.echo(fullpath,subpath + '/serial_number')
+          # self.echo('1234',subpath + '/serial_number')
           if len(thename) == 0:
              if not os.path.isfile('/etc/nvmetarget.namespace'):
                 self.echo('1','/etc/nvmetarget.namespace')
@@ -88,9 +92,6 @@ class NvmeTarget:
           cmd = 'losetup ' + device + ' ' + thefile
           print("Cmd: " + cmd)
           result = self.run_command(cmd)
-          # fullpath = os.path.abspath(thefile)
-          # self.echo(fullpath,namespacepath + '/serial_number')
-          # self.echo('1234',namespacepath + '/serial_number')
           self.echo(device,namespacepath + '/device_path')
           self.echo('1',   namespacepath + '/enable')
           portpath = '/sys/kernel/config/nvmet/ports/1'
