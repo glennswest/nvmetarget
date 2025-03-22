@@ -5,3 +5,4 @@ venv
 build
 dist
 nvmetarget.egg-info
+tests/drives
