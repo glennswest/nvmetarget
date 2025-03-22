@@ -71,8 +71,11 @@ class NvmeTarget:
           subsystem = self.read('~/.nvmetarget/subsystem')
           fullpath = os.path.abspath(thefile)
           subpath = "/sys/kernel/config/nvmet/subsystems/" + subsystem
-          self.echo(fullpath,subpath + '/serial_number')
-          # self.echo('1234',subpath + '/serial_number')
+          thefilename=os.path.basename(thefile)
+          thebasename=os.path.splitext(thefilename)[0]
+          serial  = thebasename
+          print("Serial: " + serial)
+          self.echo(serial,subpath + '/attr_serial')
           if len(thename) == 0:
              if not os.path.isfile('/etc/nvmetarget.namespace'):
                 self.echo('1','/etc/nvmetarget.namespace')
@@ -102,8 +105,9 @@ class NvmeTarget:
              self.echo('tcp' , portpath + '/addr_trtype')
              self.echo('4420', portpath + '/addr_trsvcid')
              self.echo(self.ip,portpath + '/addr_traddr')
+          port_path      = portpath + '/subsystems/' + subsystem
+          if not os.path.islink(port_path):
              subsystem_path = '/sys/kernel/config/nvmet/subsystems/' + subsystem + '/'
-             port_path      = portpath + '/subsystems/' + subsystem
              # ln -s /sys/kernel/config/nvmet/subsystems/mysub/ /sys/kernel/config/nvmet/ports/1/subsystems/mysub
              os.symlink(subsystem_path,port_path)
           theitem  = {"namespace": thename, "subsystem": subsystem, "device": device, "file": thefile, "size": thesize, "active": "True"}
