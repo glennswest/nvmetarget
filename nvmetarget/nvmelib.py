@@ -27,7 +27,6 @@ class NvmeTarget:
           # syslog(syslog.LOG_INFO, "NvmeTargetLib: Initializing")
           os.system("modprobe nvmet_tcp")
           self.home_dir = os.path.expanduser('~/.nvmetarget')
-          print(self.home_dir)
           os.makedirs(self.home_dir,exist_ok=True)
           self.target_db = getDb('/etc/nvmetarget.json')
           self.ip = self.get_ip()
@@ -39,7 +38,6 @@ class NvmeTarget:
 
       def get_loop_device(self):
           thedevice = self.run_command("losetup -f")
-          print("Loop Device: " + thedevice)
           return(thedevice)
 
       def parse_size(self,size):
@@ -74,7 +72,6 @@ class NvmeTarget:
           thefilename=os.path.basename(thefile)
           thebasename=os.path.splitext(thefilename)[0]
           serial  = thebasename
-          print("Serial: " + serial)
           self.echo(serial,subpath + '/attr_serial')
           if len(thename) == 0:
              if not os.path.isfile('/etc/nvmetarget.namespace'):
