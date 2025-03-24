@@ -133,6 +133,10 @@ class NvmeTarget:
           self.echo('1',subpath + '/attr_allow_any_host')
           self.echo(thename,'~/.nvmetarget/subsystem')
 
+      def targets(self):
+          targets = self.target_db.getAll()
+          return(targets)
+        
              
           
 
